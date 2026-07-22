@@ -1,7 +1,5 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -13,14 +11,14 @@ using Talabat.Core.Services;
 
 namespace Talabat.APIS.Controllers
 {
-    public class AccountController : ApiBaseController
+    public class AccountsController : ApiBaseController
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
         private readonly ITokenServices _tokenServices;
         private readonly IMapper _mapper;
 
-        public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager,
+        public AccountsController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager,
             ITokenServices tokenServices, IMapper mapper)
         {
             _userManager = userManager;
@@ -115,7 +113,7 @@ namespace Talabat.APIS.Controllers
         #region GET: BaseUrl/api/Account/CurrentUserAddress
         [ProducesResponseType(typeof(AddressDto), StatusCodes.Status200OK)]
         [Authorize]
-        [HttpGet("CurrentUserAddress")]
+        [HttpGet("Address")]
         public async Task<ActionResult<AddressDto>> GetCurrentUserAddress()
         {
             var user = await _userManager.FindUserWithAddressAsync(User);

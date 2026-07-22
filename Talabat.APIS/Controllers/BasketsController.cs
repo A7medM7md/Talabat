@@ -8,12 +8,12 @@ using Talabat.Core.Repositories;
 
 namespace Talabat.APIS.Controllers
 {
-    public class BasketController : ApiBaseController
+    public class BasketsController : ApiBaseController
     {
         private readonly IBasketRepository _basketRepository;
         private readonly IMapper _mapper;
 
-        public BasketController(IBasketRepository basketRepository, IMapper mapper)
+        public BasketsController(IBasketRepository basketRepository, IMapper mapper)
         {
             _basketRepository = basketRepository;
             _mapper = mapper;
