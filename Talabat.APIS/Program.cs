@@ -29,7 +29,7 @@ namespace Talabat.APIS
             builder.Services.AddConnectionStrings(builder.Configuration);
 
             // Configure Redis
-            builder.Services.AddRedisConnectionString(builder.Configuration);
+            //builder.Services.AddRedisConnectionString(builder.Configuration);
 
             // Configure the Application Services
             builder.Services.AddApplicationServices(builder.Configuration);
@@ -91,30 +91,29 @@ namespace Talabat.APIS
 
             #region Middlewares
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                // Exception handling middleware to determine if the request will passed to the next middleware
-                app.UseMiddleware<ExceptionMiddleware>();
+            //if (app.Environment.IsDevelopment())
+            //{
+            // Exception handling middleware to determine if the request will passed to the next middleware
+            app.UseMiddleware<ExceptionMiddleware>();
 
-                // Extension Method
-                app.UseSwaggerMiddlewares();
-            }
+            // Extension Method
+            app.UseSwaggerMiddlewares();
+            //}
 
             app.UseCors("AllowAll");
 
-            app.UseStatusCodePagesWithRedirects("/errors/{0}");
+            //app.UseStatusCodePagesWithRedirects("/errors/{0}");
 
             app.UseHttpsRedirection();
 
             app.UseStaticFiles();
-
-            app.UseCors("MyPolicy");
 
             app.UseAuthentication();
 
             app.UseAuthorization();
 
             app.MapControllers();
+
             #endregion
 
             app.Run();

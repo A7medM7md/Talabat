@@ -19,6 +19,9 @@ namespace Talabat.Repository.Data
         public DbSet<OrderItem> OrderItem { get; set; }
         public DbSet<DeliveryMethod> DeliveryMethod { get; set; }
 
+        public DbSet<CustomerBasket> CustomerBaskets { get; set; }
+        public DbSet<BasketItem> BasketItems { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());

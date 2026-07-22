@@ -10,12 +10,12 @@ using Talabat.Core.Services;
 
 namespace Talabat.APIS.Controllers
 {
-	public class OrderController : ApiBaseController
+	public class OrdersController : ApiBaseController
 	{
 		private readonly IOrderService _orderService;
 		private readonly IMapper _mapper;
 
-		public OrderController(IOrderService orderService, IMapper mapper)
+		public OrdersController(IOrderService orderService, IMapper mapper)
 		{
 			_orderService = orderService; // Add This Service in ApplicationServicesExtension Class
 			_mapper = mapper;
