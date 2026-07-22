@@ -1,94 +1,92 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Talabat.APIs.Dtos;
-using Talabat.APIs.Errors;
-using Talabat.APIs.Helpers;
-using Talabat.Core;
-using Talabat.Core.Entities;
+using Talabat.APIS.DTOs;
+using Talabat.APIS.Errors;
+using Talabat.APIS.Helpers;
+using Talabat.Core.Models;
 using Talabat.Core.Repositories;
 using Talabat.Core.Specifications;
 
-namespace Talabat.APIs.Controllers
+namespace Talabat.APIS.Controllers
 {
-    public class ProductsController : ApiBaseController
-    {
+	public class ProductsController : ApiBaseController
+	{
 
-        ///private readonly IGenericRepository<Product> _productRepo;
-        ///private readonly IGenericRepository<ProductBrand> _brandsRepo;
-        ///private readonly IGenericRepository<ProductBrand> _typesRepo;
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
+		private readonly IUnitOfWork _unitOfWork;
+		private readonly IMapper _mapper;
 
-        public ProductsController(
-            ///IGenericRepository<Product> productRepo,
-            ///IGenericRepository<ProductBrand> brandsRepo,
-            ///IGenericRepository<ProductBrand> typesRepo,
-            IUnitOfWork unitOfWork,
-            IMapper mapper)
-        {
-            ///_productRepo = productRepo;
-            ///_brandsRepo = brandsRepo;
-            ///_typesRepo = typesRepo;
-            _unitOfWork = unitOfWork;
+		public ProductsController(IUnitOfWork unitOfWork, IMapper mapper)
+		{
 
-            _mapper = mapper;
-        }
+			_unitOfWork = unitOfWork;
+			_mapper = mapper;
+		}
 
-        //[AllowAnonymous] // Default : Any One Can Call It
-        //[Authorize]
-        [CachedAttribute(600)] // [Action Filter] Cached 600 Seconds [600/60 -> 10 min]
-		[HttpGet]
-        public async Task<ActionResult<Pagination<ProductToReturnDto>>> GetProducts([FromQuery] ProductSpecParams specParams)
-        {
-            var spec = new ProductWithBrandAndTypeSpecifications(specParams);
+        #region EndPoints
 
-            var products = await _unitOfWork.Repository<Product>().GetAllWithSpecAsync(spec);
+        #region GET: BaseUrl/api/Product
+        [ProducesResponseType(typeof(IReadOnlyList<ProductDto>), StatusCodes.Status200OK)]
+        [HttpGet]
+		public async Task<ActionResult<IReadOnlyList<ProductDto>>> GetProducts([FromQuery] ProductSpecificationParams productParams)
+		{
+			var specification = new ProductWithBrandAndTypeSpecification(productParams);
 
-            var data = _mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductToReturnDto>>(products);
+			var products = await _unitOfWork.Repository<Product>().GetAllWithSpecificationAsync(specification);
 
-            var countSpec = new ProductWithFilterationForCountSpecification(specParams);
+			var mappedProducts = _mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductDto>>(products);
 
-            var count = await _unitOfWork.Repository<Product>().GetCountWithSpecAsync(countSpec);
+			var paginationResponse = new PaginationResponse<ProductDto>
+				(productParams.PageNumber, productParams.PageSize, _unitOfWork.Repository<Product>().GetAllAsync().Result.Count, mappedProducts);
 
-            return Ok(new Pagination<ProductToReturnDto>(specParams.PageIndex, specParams.PageSize, count, data));
-        }
+			return Ok(paginationResponse);
+		}
+        #endregion
 
-        [ProducesResponseType(typeof(ProductToReturnDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-		[CachedAttribute(600)]
-		[HttpGet("{id}")]
-        public async Task<ActionResult<ProductToReturnDto>> GetProduct(int id)
-        {
-			var spec = new ProductWithBrandAndTypeSpecifications(id);
+        #region GET: BaseUrl/api/Product/{id}
+        [ProducesResponseType(typeof(ProductDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        [HttpGet("{id}")]
+		public async Task<ActionResult<ProductDto>> GetProduct(int id)
+		{
+			var specification = new ProductWithBrandAndTypeSpecification(id);
+			var product = await _unitOfWork.Repository<Product>().GetEntityWithSpecificationAsync(specification);
 
-			var product = await _unitOfWork.Repository<Product>().GetEntityWithSpecAsync(spec);
+			if (product is null)
+				return NotFound(new ErrorResponse(404));
 
-            if (product is null)
-                return NotFound(new ApiResponse(404));
-            
-            return Ok(_mapper.Map<Product, ProductToReturnDto>(product));
-        }
+			var mappedProduct = _mapper.Map<Product, ProductDto>(product);
 
-		[CachedAttribute(600)]
-		[HttpGet("brands")] // GET : api/products/brands
-        public async Task<ActionResult<IReadOnlyList<ProductBrand>>> GetBrands()
-        {
-            var brands = await _unitOfWork.Repository<ProductBrand>().GetAllAsync();
+			return Ok(mappedProduct);
+		}
+        #endregion
 
-            return Ok(brands);
-        }
+        #region GET: BaseUrl/api/Product/Types
+        [ProducesResponseType(typeof(IReadOnlyList<ProductType>), StatusCodes.Status200OK)]
+        [HttpGet("Types")]
+		public async Task<ActionResult<IReadOnlyList<ProductType>>> GetProductsTypes(string? sort)
+		{
+			var specification = new ProductTypesSpecification(sort);
 
-		[CachedAttribute(600)]
-		[HttpGet("types")] // GET : api/products/types
-        public async Task<ActionResult<IReadOnlyList<ProductType>>> GetTypes()
-        {
-            var types = await _unitOfWork.Repository<ProductType>().GetAllAsync();
+			var productTypes = await _unitOfWork.Repository<ProductType>().GetAllWithSpecificationAsync(specification);
 
-            return Ok(types);
-        }
+			return Ok(productTypes);
+		}
+        #endregion
 
-    }
+        #region GET: BaseUrl/api/Product/Brands
+        [ProducesResponseType(typeof(IReadOnlyList<ProductBrand>), StatusCodes.Status200OK)]
+        [HttpGet("Brands")]
+		public async Task<ActionResult<IReadOnlyList<ProductBrand>>> GetProductBrands(string? sort)
+		{
+			var specification = new ProductBrandsSpecification(sort);
+
+			var productBrands = await _unitOfWork.Repository<ProductBrand>().GetAllWithSpecificationAsync(specification);
+
+			return Ok(productBrands);
+		}
+		#endregion
+
+		#endregion
+	}
 }

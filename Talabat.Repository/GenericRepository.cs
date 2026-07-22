@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Talabat.Core.Entities;
+using Talabat.Core.Models;
 using Talabat.Core.Repositories;
 using Talabat.Core.Specifications;
 using Talabat.Repository.Data;
@@ -13,38 +13,39 @@ namespace Talabat.Repository
 {
     public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
     {
-        private readonly StoreContext _dbContext;
+        private readonly AppDbContext _dbContext;
 
-        public GenericRepository(StoreContext dbContext)
+        public GenericRepository(AppDbContext dbContext)
         {
             _dbContext = dbContext;
         }
 
+        #region Without Specification
         public async Task<IReadOnlyList<T>> GetAllAsync()
             => await _dbContext.Set<T>().ToListAsync();
 
-		public async Task<T> GetByIdAsync(int id)
+        public async Task<T> GetByIdAsync(int id)
             => await _dbContext.Set<T>().FindAsync(id);
-
-        //----------With Dynamic Query------------
-		public async Task<IReadOnlyList<T>> GetAllWithSpecAsync(ISpecification<T> spec)
-            => await ApplySpecification(spec).ToListAsync(); // Translated Into => await _dbContext.Products.Include(P => P.ProductBrand).Include(P => P.ProductType).ToListAsync();
-		public async Task<T> GetEntityWithSpecAsync(ISpecification<T> spec)
-            => await ApplySpecification(spec).FirstOrDefaultAsync(); // Translated Into => await _dbContext.Set<T>().Where(X => X.Id == id).Include(P => P.ProductBrand).Include(P => P.ProductType).FirstOrDefaultAsync();
-
-        public async Task<int> GetCountWithSpecAsync(ISpecification<T> spec)
-            => await ApplySpecification(spec).CountAsync();
-        private IQueryable<T> ApplySpecification(ISpecification<T> spec)
-            => SpecificationEvaluator<T>.GetQuery(_dbContext.Set<T>(), spec);
 
         public async Task AddAsync(T entity)
             => await _dbContext.Set<T>().AddAsync(entity);
 
-        public void Update(T entity)
-            => _dbContext.Set<T>().Update(entity);
-
         public void Delete(T entity)
             => _dbContext.Set<T>().Remove(entity);
 
+        public void Update(T item)
+            => _dbContext.Set<T>().Update(item);
+        #endregion
+
+        #region With Specification
+        public async Task<IReadOnlyList<T>> GetAllWithSpecificationAsync(ISpecification<T> specification)
+            => await ApplySpecification(specification).ToListAsync();
+
+        public async Task<T> GetEntityWithSpecificationAsync(ISpecification<T> specification)
+            => await ApplySpecification(specification).FirstOrDefaultAsync();
+
+        private IQueryable<T> ApplySpecification(ISpecification<T> specification)
+            => SpecificationEvaluator<T>.GetQuery(_dbContext.Set<T>(), specification);
+        #endregion
     }
 }

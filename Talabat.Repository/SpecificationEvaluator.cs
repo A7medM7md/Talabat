@@ -1,34 +1,41 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Talabat.Core.Entities;
+using Talabat.Core.Models;
+using Microsoft.EntityFrameworkCore;
 using Talabat.Core.Specifications;
 
 namespace Talabat.Repository
 {
-	public static class SpecificationEvaluator<TEntity> where TEntity : BaseEntity
+	public static class SpecificationEvaluator<T> where T : BaseEntity
 	{
-		public static IQueryable<TEntity> GetQuery(IQueryable<TEntity> inputQuery, ISpecification<TEntity> spec)
+		// Function To Build Query
+		public static IQueryable<T> GetQuery(IQueryable<T> dbSet, ISpecification<T> specification)
 		{
-			var query = inputQuery;
+			// dbContext.Products
+			var query = dbSet;
 
-			if (spec.Criteria is not null)
-				query = query.Where(spec.Criteria);
+			// Where(P => P.Id == id)
+			if (specification.Criteria is not null)
+				query = query.Where(specification.Criteria);
 
-			if(spec.OrderBy is not null) // P => P.Price
-				query = query.OrderBy(spec.OrderBy); // _dbContext.Set<Product>().OrderBy(P => P.Price)
-            
-			if (spec.OrderByDescending is not null) // P => P.Price
-                query = query.OrderByDescending(spec.OrderByDescending); // _dbContext.Set<Product>().OrderByDescending(P => P.Price)
+			// OrderBy(P => P.Property) 
+			if (specification.OrderBy is not null)
+				query = query.OrderBy(specification.OrderBy);
 
-			if(spec.IsPagenationEnabled)
-				query = query.Skip(spec.Skip).Take(spec.Take); // Apply Pagenation
+			// OrderByDescending(P => P.Property) 
+			if (specification.OrderByDescending is not null)
+				query = query.OrderByDescending(specification.OrderByDescending);
 
+			// Skip(n).Take(n)
+			if (specification.IsPaginationEnabled)
+				query = query.Skip(specification.Skip).Take(specification.Take);
 
-            query = spec.Includes.Aggregate(query, (currentQuery, includeExpression) => currentQuery.Include(includeExpression));
+			// Include(p => p.ProductType).Include(p => p.ProductBrand)
+			query = specification.Includes
+				.Aggregate(query, (currentQuery, includeExpression) => currentQuery.Include(includeExpression));
 
 			return query;
 		}

@@ -1,56 +1,48 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Talabat.APIs.Errors;
+using Talabat.APIS.Errors;
 using Talabat.Repository.Data;
 
-namespace Talabat.APIs.Controllers
+namespace Talabat.APIS.Controllers
 {
-    public class BuggyController : ApiBaseController
-    {
-        private readonly StoreContext _dbContext;
-        public BuggyController(StoreContext dbContext)
-        {
-            _dbContext = dbContext;
-        }
+	// Controller To Test Errors Type
+	public class BuggyController : ApiBaseController
+	{
+		private readonly AppDbContext _dbContext;
 
+		public BuggyController(AppDbContext dbContext)
+		{
+			_dbContext = dbContext;
+		}
 
-        [HttpGet("notfound")] // GET : api/buggy/notfound
-        public ActionResult GetNotFoundRequest()
-        {
-            var product = _dbContext.Products.Find(100); // Id NotFound
-            if (product is null)
-                //return NotFound();
-                return NotFound(new ApiResponse(404));
+		[HttpGet("BadRequest")]
+		public ActionResult GetBadRequestError()
+		{
+			return BadRequest(new ErrorResponse(400));
+		}
 
-            return Ok(product);
-        }
+		[HttpGet("NotFound")]
+		public ActionResult GetNotFoundError()
+		{
+			var product = _dbContext.Products.Find(100); // Null
 
+			return product is null ? NotFound(new ErrorResponse(404)) : Ok(product);
+		}
 
-        [HttpGet("servererror")] // GET : api/buggy/servererror
-        public ActionResult GetServerErrorRequest()
-        {
-            var product = _dbContext.Products.Find(100); // product = null
-            var productToReturn = product.ToString(); // Will Throw Null Reference 'Exception' => Leads To "Server Error"
+		[HttpGet("ServerError")]
+		public ActionResult GetServerError()
+		{
+			var product = _dbContext.Products.Find(100); // Null
 
-            return Ok(productToReturn);
-        }
+			var productToReturn = product.ToString(); // NullReferenceException
 
+			return Ok(productToReturn);
+		}
 
-        [HttpGet("badrequest")] // GET : api/buggy/badrequest
-        public ActionResult GetBadRequest()
-        {
-            //return BadRequest();
-            return BadRequest(new ApiResponse(400));
-        }
-
-
-        [HttpGet("badrequest/{id}")] // GET : api/buggy/badrequest/any-string
-        public ActionResult GetBadRequest(int id) // [ValidationError]
-        {
-            return Ok();
-        }
-
-
-        // Any Endpoint Called Except Those Give You NotFound Endpoint Error
-    }
+		[HttpGet("BadRequest/{id}")]
+		public ActionResult GetValidationError(int id)
+		{
+			return Ok();
+		}
+	}
 }

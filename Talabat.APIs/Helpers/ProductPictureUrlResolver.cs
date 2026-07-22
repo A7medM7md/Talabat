@@ -1,24 +1,20 @@
 ﻿using AutoMapper;
-using Talabat.APIs.Dtos;
-using Talabat.Core.Entities;
+using AutoMapper.Execution;
+using Talabat.APIS.DTOs;
+using Talabat.Core.Models;
 
-namespace Talabat.APIs.Helpers
+namespace Talabat.APIS.Helpers
 {
-    public class ProductPictureUrlResolver : IValueResolver<Product, ProductToReturnDto, string>
-    {
-        private readonly IConfiguration _configuration;
+	public class ProductPictureUrlResolver : IValueResolver<Product, ProductDto, string>
+	{
+		private readonly IConfiguration _configuration;
 
-        public ProductPictureUrlResolver(IConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
+		public ProductPictureUrlResolver(IConfiguration configuration)
+		{
+			_configuration = configuration; // Inject IConfiguration Service To get "ApiBaseUrl" from appsettings.json
+		}
 
-        public string Resolve(Product source, ProductToReturnDto destination, string destMember, ResolutionContext context)
-        {
-            if (!string.IsNullOrEmpty(source.PictureUrl))
-                return $"{_configuration["ApiBaseUrl"]}{source.PictureUrl}";
-
-            return string.Empty;
-        }
-    }
+		public string Resolve(Product source, ProductDto destination, string destMember, ResolutionContext context)
+			=> (!string.IsNullOrEmpty(source.PictureUrl)) ? $"{_configuration["ApiBaseUrl"]}{source.PictureUrl}" : string.Empty;
+	}
 }

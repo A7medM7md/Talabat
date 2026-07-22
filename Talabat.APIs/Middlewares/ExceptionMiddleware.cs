@@ -1,49 +1,56 @@
 ﻿using System.Net;
 using System.Text.Json;
-using Talabat.APIs.Errors;
+using Talabat.APIS.Errors;
 
-namespace Talabat.APIs.Middlewares
+namespace Talabat.APIS.Middlewares
 {
+	// This middleware will handle all unhandled exceptions in the application, and return a structured error response
 	public class ExceptionMiddleware
 	{
-		private readonly RequestDelegate next;
-		private readonly ILogger<ExceptionMiddleware> logger;
-		private readonly IHostEnvironment env;
+		private readonly RequestDelegate _next; // To refer to the next component in the request processing pipeline
+		private readonly ILogger<ExceptionMiddleware> _logger; // To log the exception details
+		private readonly IHostEnvironment _environment; // To customize the error response based on the environment
 
-		public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger, IHostEnvironment env)
-        {
-			this.next = next;
-			this.logger = logger;
-			this.env = env;
+		public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger, IHostEnvironment environment)
+		{
+			_next = next;
+			_logger = logger;
+			_environment = environment;
 		}
 
-		public async Task InvokeAsync(HttpContext context)
+		// Handel server error
+		public async Task InvokeAsync(HttpContext httpContext)
 		{
 			try
 			{
-				await next.Invoke(context); // No Exceptions, Go To Next Middleware
+				// If no error had occurred, request will passed to next middleware
+				await _next.Invoke(httpContext);
 			}
-			catch(Exception ex)
+			catch (Exception ex)
 			{
-				logger.LogError(ex, ex.Message); // Log Exception On Console Screen [Development Env]
-												 // If you are In Production : Use Log Package To Log The Exception In DB
+				_logger.LogError(ex, ex.Message);
+				await HandleExceptionAsync(httpContext, ex);
+			}
+		}
 
-				// Determine Headers Info [ContentTType & StatusCode]
-				context.Response.Headers.ContentType = "application/json";
-				var statusCode = context.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
+		private Task HandleExceptionAsync(HttpContext httpContext, Exception ex)
+		{
+			// Custom error response
 
-				// Handle Response
-				var response = env.IsDevelopment()?
-					new ApiExceptionResponse(statusCode, ex.Message, ex.StackTrace.ToString())
-					: new ApiExceptionResponse(statusCode, ex.Message, ex.StackTrace.ToString());
+			httpContext.Response.ContentType = "application/json";
+			httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
-				var options = new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+			var response = _environment.IsDevelopment()
+				 // Development 
+				 ? new ExceptionResponse(httpContext.Response.StatusCode, ex.Message, ex.StackTrace.ToString())
+				 // Production
+				 : new ExceptionResponse(httpContext.Response.StatusCode);
 
-				var json = JsonSerializer.Serialize(response, options);
+			var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
-				await context.Response.WriteAsync(json);
-            }
-        }
+			var jsonResponse = JsonSerializer.Serialize(response, options);
 
-    }
+			return httpContext.Response.WriteAsync(jsonResponse);
+		}
+	}
 }

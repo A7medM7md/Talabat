@@ -1,12 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Talabat.APIs.Dtos
+﻿namespace Talabat.APIS.DTOs
 {
-    public class OrderDto
-    {
-        [Required]
-        public string BasketId { get; set; }
-        public int DeliveryMethodId { get; set; } // Already Required
-        public AddressDto ShippingAddress { get; set; } // Make AddressDto and Make It's Attributes Required
-    }
+	public class OrderDto
+	{
+		public string BasketId { get; set; }
+		public int DeliveryMethodId { get; set; }
+		public AddressDto ShippingAddress { get; set; }
+	}
 }

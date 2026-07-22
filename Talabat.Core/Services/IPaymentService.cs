@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Talabat.Core.Entities;
-using Talabat.Core.Entities.Order_Aggregate;
+using Talabat.Core.Models;
+using Talabat.Core.Order_Aggregate;
 
 namespace Talabat.Core.Services
 {
-	public interface IPaymentService
-	{
-		public Task<CustomerBasket?> CreateorUpdatePaymentIntent(string basketId);
-        Task<Order> UpdatePaymentIntentToSucceededOrFailed(string paymentIntentId, bool isSucceeded);
+    public interface IPaymentService
+    {
+        // Create Or Update PaymentIntentId Based On Basket Amount
+        Task<CustomerBasket?> CreateOrUpdatePaymentIntent(string basketId);
+        Task<Order> UpdatePaymentIntentToSucceedOrFailed(string paymentIntentId, bool flag);
     }
 }

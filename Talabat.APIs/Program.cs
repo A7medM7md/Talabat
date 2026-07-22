@@ -1,149 +1,110 @@
-using AutoMapper.Internal;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using StackExchange.Redis;
-using Talabat.APIs.Errors;
-using Talabat.APIs.Extensions;
-using Talabat.APIs.Helpers;
-using Talabat.APIs.Middlewares;
-using Talabat.Core.Entities;
-using Talabat.Core.Entities.Identity;
+using Talabat.APIS.Errors;
+using Talabat.APIS.Extension_Methods;
+using Talabat.APIS.Middlewares;
+using Talabat.APIS.Profiles;
+using Talabat.Core.Models;
 using Talabat.Core.Repositories;
 using Talabat.Repository;
 using Talabat.Repository.Data;
 using Talabat.Repository.Identity;
 
-// This Static Method Creates a "WebApplicationBuilder" instance using default configurations (e.g., Kestrel server, appsettings, logging, DI)
-/// This line sets up the environment for the web app:
-/// - Prepares the Kestrel server to receive HTTP requests
-/// - Loads configuration sources (like appsettings.json, environment variables, CLI args)
-/// - Sets up logging infrastructure
-/// - Initializes the Dependency Injection container for services
-var builder = WebApplication.CreateBuilder(args);
-
-#region Configure Services [Allow DI For Them]
-// --> Here I Configured A Services Only, We Can Configure 4 Things Also Here
-
-// Add services to the container.
-            
-builder.Services.AddControllers(); // Allow DI For API Services
-
-builder.Services.AddSwaggerServices();
-
-builder.Services.AddDbContext<StoreContext>(options => // Allow DI For DbContext and For Options
+namespace Talabat.APIS
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
-});
+	public class Program
+	{
+		public static async Task Main(string[] args)
+		{
+			#region Create Host
+			var builder = WebApplication.CreateBuilder(args);
+			#endregion
 
+			#region DI Container
+			// Add services to the container.
 
-builder.Services.AddDbContext<AppIdentityDbContext>(options =>
-{
-    options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection"));
-});
+			builder.Services.AddControllers();
+			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+			builder.Services.AddEndpointsApiExplorer();
+			builder.Services.AddSwaggerGen();
 
+			#region Extension Methods
+			// Configure Entity Framework Core
+			builder.Services.AddConnectionStrings(builder.Configuration);
 
-builder.Services.AddSingleton<IConnectionMultiplexer>(options =>
-{
-    var connection = builder.Configuration.GetConnectionString("Redis");
-    return ConnectionMultiplexer.Connect(connection);
-});
+			// Configure Redis
+			builder.Services.AddRedisConnectionString(builder.Configuration);
 
-builder.Services.AddApplicationServices(); /*Extenstion Method*/
+			// Configure the Application Services
+			builder.Services.AddApplicationServices(builder.Configuration);
 
-builder.Services.AddIdentityServices(builder.Configuration); /*Extenstion Method*/
+			// Configure Identity Services
+			builder.Services.AddIdentityServices(builder.Configuration);
+			#endregion
 
-// Allow DI For Cors Services
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("MyPolicy", options =>
-    {
-        options.AllowAnyHeader().AllowAnyMethod().WithOrigins(builder.Configuration["FrontBaseUrl"]);
-    });
-});
+			#endregion
 
-#endregion
+			#region Build Project
+			var app = builder.Build();
+			#endregion
 
-var app = builder.Build();
+			#region Update Database [Apply Migrations]
+			using var scope = app.Services.CreateScope();
+			var services = scope.ServiceProvider;
+			var loggerFactory = services.GetRequiredService<ILoggerFactory>();
 
-#region Apply Migration And Data Seeding
+			try
+			{
+				// Update Main Database
+				var dbContext = services.GetRequiredService<AppDbContext>();
+				await dbContext.Database.MigrateAsync();
 
-using var scope = app.Services.CreateScope(); // Create Scope Manually/Explicitly
-var services = scope.ServiceProvider; // Provider For All Services That Works "Scoped"
-var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+				// Update Identity Database
+				var IdentityDbContext = services.GetRequiredService<ApplicationIdentityDbContext>();
+				await IdentityDbContext.Database.MigrateAsync();
 
-try
-{
-    var dbContext = services.GetRequiredService<StoreContext>(); // Ask CLR Explicitly For Creating Obj From DbContext [StoreContext]
-    await dbContext.Database.MigrateAsync(); // Update-Database [Apply Migration]
+				// Seeding Data (Main Database)
+				await DataSeedInitializer.SeedDataAsync(dbContext);
 
-    await StoreContextSeed.SeedAsync(dbContext);
+				// Seeding Data (Identity)
+				var userManger = services.GetRequiredService<UserManager<AppUser>>();
+				await IdentityDataSeedInitializer.SeedUserAsync(userManger);
+			}
+			catch (Exception ex)
+			{
+				var logger = loggerFactory.CreateLogger<Program>();
+				logger.LogError(ex, "An Error Occurred During Appling The Migration");
+			}
+			#endregion
 
-    /*For Identity DB*/
-    //var identityDbContext = services.GetRequiredService<AppIdentityDbContext>();
-    //await identityDbContext.Database.MigrateAsync(); // Update-Database
+			#region Middlewares
+			// Configure the HTTP request pipeline.
+			if (app.Environment.IsDevelopment())
+			{
+				// Exception handling middleware to determine if the request will passed to the next middleware
+				app.UseMiddleware<ExceptionMiddleware>();
 
-    var userManager = services.GetRequiredService<UserManager<AppUser>>(); // Ask CLR To Inject Obj From UserManager Explicitly [U Must Allow DI For It => Using AddAuthentication();]
-    await AppIdentityDbContextSeed.SeedUsersAsync(userManager);
+				// Extension Method
+				app.UseSwaggerMiddlewares();
+			}
+
+			app.UseStatusCodePagesWithRedirects("/errors/{0}");
+
+			app.UseHttpsRedirection();
+
+			app.UseStaticFiles();
+
+			app.UseCors("MyPolicy");
+
+			app.UseAuthentication();
+
+			app.UseAuthorization();
+
+			app.MapControllers();
+			#endregion
+
+			app.Run();
+		}
+	}
 }
-catch (Exception ex) // Catch Thrown Exception
-{
-    //Console.WriteLine(ex); // Show Exception Details In Console Screen [Not Readable]
-    // Better =>
-    var logger = loggerFactory.CreateLogger<Program>();
-    logger.LogError(ex, "An error occurred during apply the migration.");
-
-}
-
-#endregion
-
-#region Configure App [Kestrel] MiddleWares
-
-app.UseMiddleware<ExceptionMiddleware>(); // Custom Middleware
-
-
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwaggerMiddlewares();
-}
-
-
-//app.UseStatusCodePagesWithRedirects("/errors/{0}");
-app.UseStatusCodePagesWithReExecute("/errors/{0}");
-
-
-// You Installed SSL Certificate On The Deploying Server, Result in Any Request Redirect Over Https Protocol
-app.UseHttpsRedirection();
-
-app.UseStaticFiles();
-
-
-app.UseCors("MyPolicy");
-
-
-app.UseAuthentication();
-app.UseAuthorization();
-
-#region Routing MiddleWare
-
-// [In .NET 5] (OLD)
-/*
-    app.UseRouting();
-
-    app.UseEndpoints(endpoints =>
-    {
-        endpoints.MapControllers();
-    });
-*/
-
-// OR [In .NET 6] (NEW) -> Rely On Routing Per Controller
-app.MapControllers();
-
-#endregion
-
-
-#endregion
-
-app.Run();
