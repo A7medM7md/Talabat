@@ -22,9 +22,6 @@ namespace Talabat.APIS.Extension_Methods
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
                 options.Lockout.MaxFailedAccessAttempts = 5;
 
-                // signIn settings
-                options.SignIn.RequireConfirmedEmail = true;
-
                 // user settings
                 options.User.RequireUniqueEmail = true;
 

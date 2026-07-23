@@ -58,46 +58,17 @@ namespace Talabat.Repository
                     .FirstOrDefaultAsync(b => b.Id == basketId);
             }
 
-            //public async Task<CustomerBasket?> UpdateBasketAsync(CustomerBasket basket)
-            //{
-            //    var existingBasket = await _context.CustomerBaskets
-            //        .Include(b => b.Items)
-            //        .FirstOrDefaultAsync(b => b.Id == basket.Id);
-
-            //    // temp change (instead or redis)
-            //    foreach (var item in basket.Items)
-            //    {
-            //        item.Id = 0;
-            //    }
-
-            //    if (existingBasket is null)
-            //    {
-            //        await _context.CustomerBaskets.AddAsync(basket);
-            //    }
-            //    else
-            //    {
-            //        // Update basket properties
-            //        existingBasket.DeliveryMethodId = basket.DeliveryMethodId;
-            //        existingBasket.PaymentIntentId = basket.PaymentIntentId;
-            //        existingBasket.ClientSecret = basket.ClientSecret;
-
-            //        // Replace items
-            //        _context.BasketItems.RemoveRange(existingBasket.Items);
-
-            //        existingBasket.Items = basket.Items;
-            //    }
-
-            //    await _context.SaveChangesAsync();
-
-            //    return await GetBasketAsync(basket.Id);
-            //}
-
-
             public async Task<CustomerBasket?> UpdateBasketAsync(CustomerBasket basket)
             {
                 var existingBasket = await _context.CustomerBaskets
                     .Include(b => b.Items)
                     .FirstOrDefaultAsync(b => b.Id == basket.Id);
+
+                // temp change (instead or redis)
+                foreach (var item in basket.Items)
+                {
+                    item.Id = 0;
+                }
 
                 if (existingBasket is null)
                 {
@@ -105,36 +76,65 @@ namespace Talabat.Repository
                 }
                 else
                 {
-                    // Update Basket Properties
+                    // Update basket properties
                     existingBasket.DeliveryMethodId = basket.DeliveryMethodId;
                     existingBasket.PaymentIntentId = basket.PaymentIntentId;
                     existingBasket.ClientSecret = basket.ClientSecret;
 
-                    // Remove old items
+                    // Replace items
                     _context.BasketItems.RemoveRange(existingBasket.Items);
 
-                    // Add new items
-                    existingBasket.Items.Clear();
-
-                    foreach (var item in basket.Items)
-                    {
-                        existingBasket.Items.Add(new BasketItem
-                        {
-                            Id = item.Id,
-                            ProductName = item.ProductName,
-                            PictureUrl = item.PictureUrl,
-                            Brand = item.Brand,
-                            Type = item.Type,
-                            Price = item.Price,
-                            Quantity = item.Quantity
-                        });
-                    }
+                    existingBasket.Items = basket.Items;
                 }
 
                 await _context.SaveChangesAsync();
 
                 return await GetBasketAsync(basket.Id);
             }
+
+
+            //public async Task<CustomerBasket?> UpdateBasketAsync(CustomerBasket basket)
+            //{
+            //    var existingBasket = await _context.CustomerBaskets
+            //        .Include(b => b.Items)
+            //        .FirstOrDefaultAsync(b => b.Id == basket.Id);
+
+            //    if (existingBasket is null)
+            //    {
+            //        await _context.CustomerBaskets.AddAsync(basket);
+            //    }
+            //    else
+            //    {
+            //        // Update Basket Properties
+            //        existingBasket.DeliveryMethodId = basket.DeliveryMethodId;
+            //        existingBasket.PaymentIntentId = basket.PaymentIntentId;
+            //        existingBasket.ClientSecret = basket.ClientSecret;
+
+            //        // Remove old items
+            //        _context.BasketItems.RemoveRange(existingBasket.Items);
+
+            //        // Add new items
+            //        existingBasket.Items.Clear();
+
+            //        foreach (var item in basket.Items)
+            //        {
+            //            existingBasket.Items.Add(new BasketItem
+            //            {
+            //                Id = item.Id,
+            //                ProductName = item.ProductName,
+            //                PictureUrl = item.PictureUrl,
+            //                Brand = item.Brand,
+            //                Type = item.Type,
+            //                Price = item.Price,
+            //                Quantity = item.Quantity
+            //            });
+            //        }
+            //    }
+
+            //    await _context.SaveChangesAsync();
+
+            //    return await GetBasketAsync(basket.Id);
+            //}
 
 
             public async Task<bool> DeleteBasketAsync(string basketId)
