@@ -110,7 +110,7 @@ namespace Talabat.APIS.Controllers
         }
         #endregion
 
-        #region GET: BaseUrl/api/Account/CurrentUserAddress
+        #region GET: BaseUrl/api/Account/Address
         [ProducesResponseType(typeof(AddressDto), StatusCodes.Status200OK)]
         [Authorize]
         [HttpGet("Address")]
@@ -137,18 +137,21 @@ namespace Talabat.APIS.Controllers
             if (user is null)
                 return Unauthorized(new ErrorResponse(401));
 
-            var address = _mapper.Map<AddressDto, Address>(addressToUpdate);
+            if (user.Address is null)
+            {
+                user.Address = _mapper.Map<Address>(addressToUpdate);
+            }
+            else
+            {
+                _mapper.Map(addressToUpdate, user.Address);
+            }
 
-            address.Id = user.Address.Id; // To Update On The Same User
+            var result = await _userManager.UpdateAsync(user);
 
-            user.Address = address;
-
-            var updatedAddress = await _userManager.UpdateAsync(user);
-
-            if (!updatedAddress.Succeeded)
+            if (!result.Succeeded)
                 return BadRequest(new ErrorResponse(400));
 
-            return Ok(updatedAddress);
+            return Ok();
         }
         #endregion
 
