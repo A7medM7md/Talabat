@@ -1,0 +1,64 @@
+@if (placed(); as placedId) {
+  <div class="container-page py-16 flex flex-col items-center text-center">
+    <div class="grid h-24 w-24 place-items-center rounded-full bg-success/15 text-success mb-6 animate-fade-up">
+      <lucide-icon name="check-circle-2" [size]="48" />
+    </div>
+    <h1 class="text-3xl md:text-4xl font-black">Order confirmed!</h1>
+    <p class="mt-2 text-muted-foreground max-w-md">Thank you — your food is on the way. Order reference #{{ placedId }}.</p>
+    <div class="mt-8 flex flex-wrap gap-3 justify-center">
+      <a [routerLink]="['/orders', placedId]" class="btn-brand">View order</a>
+      <a routerLink="/products" class="rounded-full border border-border px-5 py-2.5 font-semibold hover:border-primary">Order again</a>
+    </div>
+  </div>
+} @else {
+  <div class="container-page py-6 md:py-10 max-w-2xl">
+    <h1 class="text-3xl font-bold mb-2">Secure payment</h1>
+    <p class="text-sm text-muted-foreground mb-6 flex items-center gap-1.5">
+      <lucide-icon name="lock" [size]="16" /> demo mode
+    </p>
+
+    <div class="rounded-3xl border border-border bg-gradient-to-br from-foreground to-foreground/80 text-background p-6 mb-6 shadow-elevated">
+      <div class="flex justify-between items-start">
+        <span class="font-semibold opacity-70">CREDIT CARD</span>
+        <lucide-icon name="credit-card" [size]="24" class="opacity-70" />
+      </div>
+      <div class="mt-8 text-2xl font-mono tracking-widest">{{ card().number }}</div>
+      <div class="mt-6 flex justify-between text-sm">
+        <div><div class="opacity-60 text-xs">CARD HOLDER</div><div class="font-semibold uppercase">{{ card().name || 'YOUR NAME' }}</div></div>
+        <div><div class="opacity-60 text-xs">EXPIRES</div><div class="font-semibold">{{ card().exp }}</div></div>
+      </div>
+    </div>
+
+    <div class="rounded-2xl border border-border bg-card p-6 space-y-4">
+      <label class="block">
+        <span class="text-xs font-semibold text-muted-foreground">Card number</span>
+        <input pInputText [ngModel]="card().number" (ngModelChange)="setCardField('number', $event)" name="cardNumber" class="mt-1 w-full font-mono" />
+      </label>
+      <label class="block">
+        <span class="text-xs font-semibold text-muted-foreground">Name on card</span>
+        <input pInputText [ngModel]="card().name" (ngModelChange)="setCardField('name', $event)" name="cardName" placeholder="Full name" class="mt-1 w-full" />
+      </label>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="block">
+          <span class="text-xs font-semibold text-muted-foreground">Expiry</span>
+          <input pInputText [ngModel]="card().exp" (ngModelChange)="setCardField('exp', $event)" name="cardExp" class="mt-1 w-full" />
+        </label>
+        <label class="block">
+          <span class="text-xs font-semibold text-muted-foreground">CVC</span>
+          <input pInputText [ngModel]="card().cvc" (ngModelChange)="setCardField('cvc', $event)" name="cardCvc" class="mt-1 w-full" />
+        </label>
+      </div>
+
+      <!-- @if (intent(); as it) {
+        <div class="rounded-xl bg-muted p-3 text-xs font-mono text-muted-foreground space-y-1">
+          <div><span class="text-foreground font-semibold">Intent:</span> {{ it.paymentIntentId }}</div>
+          <div class="truncate"><span class="text-foreground font-semibold">Secret:</span> {{ it.clientSecret }}</div>
+        </div>
+      } -->
+
+      <button (click)="pay()" [disabled]="loading() || !intent()" class="btn-brand w-full">
+        {{ loading() ? 'Processing…' : 'Confirm payment' }}
+      </button>
+    </div>
+  </div>
+}

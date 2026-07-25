@@ -1,0 +1,97 @@
+@if (loading()) {
+  <div class="container-page py-10">
+    <div class="skeleton h-8 w-64 mb-6"></div>
+    <div class="skeleton h-64"></div>
+  </div>
+} @else if (error() || !order()) {
+  <div class="container-page py-10 text-center">
+    <p class="text-lg font-semibold">Order not found</p>
+    <a routerLink="/orders" class="text-primary hover:underline text-sm">← Back to orders</a>
+  </div>
+} @else {
+  @let o = order()!;
+  <div class="container-page py-6 md:py-10">
+    <a routerLink="/orders" class="text-sm text-muted-foreground hover:text-primary">← All orders</a>
+    <div class="mt-3 flex flex-wrap items-center justify-between gap-3 mb-6">
+      <div>
+        <h1 class="text-3xl font-bold">Order #{{ o.id }}</h1>
+        <p class="text-sm text-muted-foreground">Placed on {{ o.orderDate | date: 'medium' }}</p>
+      </div>
+      <span class="rounded-full bg-success/15 text-success px-3 py-1 text-sm font-semibold">{{ o.status ?? 'Pending' }}</span>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-[1fr_360px]">
+      <div class="space-y-6">
+        <section class="rounded-2xl border border-border bg-card p-6">
+          <h2 class="font-semibold mb-5">Delivery timeline</h2>
+          <ol class="relative border-l-2 border-border pl-6 space-y-6">
+            @for (s of timeline; track s.label) {
+              <li class="relative">
+                <div
+                  class="absolute -left-[34px] grid h-8 w-8 place-items-center rounded-full"
+                  [class.bg-primary]="s.done"
+                  [class.text-primary-foreground]="s.done"
+                  [class.bg-muted]="!s.done"
+                  [class.text-muted-foreground]="!s.done"
+                >
+                  <lucide-icon [name]="s.icon" [size]="16" />
+                </div>
+                <div class="font-semibold" [class.text-muted-foreground]="!s.done">{{ s.label }}</div>
+                @if (s.done) {
+                  <div class="text-xs text-muted-foreground">Completed</div>
+                }
+              </li>
+            }
+          </ol>
+        </section>
+
+        <section class="rounded-2xl border border-border bg-card p-6">
+          <h2 class="font-semibold mb-4">Items</h2>
+          <div class="space-y-3">
+            @for (i of o.orderItems; track i.productId) {
+              <div class="flex gap-3 items-center">
+                <div class="h-14 w-14 rounded-xl bg-muted overflow-hidden shrink-0">
+                  @if (i.pictureUrl) {
+                    <img [src]="resolveImg(i.pictureUrl)" [alt]="i.productName" class="h-full w-full object-cover" (error)="onImgError($event)" />
+                  }
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="font-medium truncate">{{ i.productName }}</div>
+                  <div class="text-xs text-muted-foreground">Qty {{ i.quantity }}</div>
+                </div>
+                <div class="font-semibold">{{ (i.price * i.quantity).toFixed(2) }} AED</div>
+              </div>
+            }
+          </div>
+        </section>
+      </div>
+
+      <aside class="space-y-4">
+        <section class="rounded-2xl border border-border bg-card p-5">
+          <div class="flex items-center gap-2 font-semibold mb-3"><lucide-icon name="map-pin" [size]="16" class="text-primary" /> Shipping address</div>
+          <div class="text-sm text-muted-foreground space-y-0.5">
+            <div class="text-foreground font-medium">{{ o.shippingAddress?.firstName }} {{ o.shippingAddress?.lastName }}</div>
+            <div>{{ o.shippingAddress?.street }}</div>
+            <div>{{ o.shippingAddress?.city }}, {{ o.shippingAddress?.country }}</div>
+          </div>
+        </section>
+        <section class="rounded-2xl border border-border bg-card p-5">
+          <div class="flex items-center gap-2 font-semibold mb-3"><lucide-icon name="truck" [size]="16" class="text-primary" /> Delivery method</div>
+          <div class="text-sm">{{ o.deliveryMethod ?? 'Standard' }}</div>
+          <div class="text-xs text-muted-foreground">Shipping cost {{ (o.shippingPrice ?? 0).toFixed(2) }} AED</div>
+        </section>
+        <section class="rounded-2xl border border-border bg-card p-5 space-y-2 text-sm">
+          <div class="flex justify-between"><span class="text-muted-foreground">Subtotal</span><span>{{ (o.subtotal ?? 0).toFixed(2) }} AED</span></div>
+          <div class="flex justify-between"><span class="text-muted-foreground">Delivery</span><span>{{ (o.shippingPrice ?? 0).toFixed(2) }} AED</span></div>
+          <div class="flex justify-between text-lg font-bold border-t border-border pt-2"><span>Total</span><span>{{ (o.total ?? 0).toFixed(2) }} AED</span></div>
+        </section>
+        <!-- @if (o.paymentIntentId) {
+          <section class="rounded-2xl border border-border bg-card p-5">
+            <div class="flex items-center gap-2 font-semibold mb-2"><lucide-icon name="credit-card" [size]="16" class="text-primary" /> Payment</div>
+            <div class="text-xs font-mono text-muted-foreground break-all">{{ o.paymentIntentId }}</div>
+          </section>
+        } -->
+      </aside>
+    </div>
+  </div>
+}

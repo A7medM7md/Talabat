@@ -1,0 +1,67 @@
+<div class="container-page py-6 md:py-10">
+  <nav class="flex items-center gap-1 text-sm text-muted-foreground mb-6">
+    <a routerLink="/" class="hover:text-primary">Home</a>
+    <lucide-icon name="chevron-right" [size]="16" />
+    <a routerLink="/products" class="hover:text-primary">Menu</a>
+    <lucide-icon name="chevron-right" [size]="16" />
+    <span class="text-foreground truncate">{{ product()?.name ?? '…' }}</span>
+  </nav>
+
+  @if (loading()) {
+    <div class="grid md:grid-cols-2 gap-8">
+      <div class="skeleton aspect-square rounded-3xl"></div>
+      <div class="space-y-4">
+        <div class="skeleton h-8 w-3/4"></div>
+        <div class="skeleton h-4 w-1/2"></div>
+        <div class="skeleton h-24"></div>
+      </div>
+    </div>
+  }
+
+  @if (product(); as p) {
+    <div class="grid md:grid-cols-2 gap-8 lg:gap-12">
+      <div class="rounded-3xl overflow-hidden bg-muted aspect-square">
+        <img [src]="img" [alt]="p.name" (error)="onImgError($event)" class="h-full w-full object-cover" />
+      </div>
+      <div>
+        <div class="flex flex-wrap gap-2 mb-3">
+          <span class="chip chip-active">{{ p.productType }}</span>
+          <span class="chip">{{ p.productBrand }}</span>
+        </div>
+        <h1 class="text-3xl md:text-4xl font-black">{{ p.name }}</h1>
+        <div class="mt-3 flex items-center gap-4 text-sm text-muted-foreground">
+          <span class="flex items-center gap-1"><lucide-icon name="star" [size]="16" class="fill-warning text-warning" /> 4.7 (2.3k)</span>
+          <span class="flex items-center gap-1"><lucide-icon name="clock" [size]="16" /> 20–30 min</span>
+        </div>
+        <p class="mt-5 text-muted-foreground leading-relaxed">{{ p.description }}</p>
+        <div class="mt-6 text-4xl font-black text-primary">
+          {{ p.price.toFixed(2) }} <span class="text-lg text-muted-foreground font-normal">AED</span>
+        </div>
+
+        <div class="mt-8 flex items-center gap-4">
+          <div class="flex items-center rounded-full border border-border bg-card">
+            <button (click)="decrease()" class="grid h-11 w-11 place-items-center hover:text-primary" aria-label="Decrease">
+              <lucide-icon name="minus" [size]="16" />
+            </button>
+            <span class="w-10 text-center font-semibold">{{ qty() }}</span>
+            <button (click)="increase()" class="grid h-11 w-11 place-items-center hover:text-primary" aria-label="Increase">
+              <lucide-icon name="plus" [size]="16" />
+            </button>
+          </div>
+          <button (click)="add()" class="btn-brand flex-1">Add to basket — {{ (p.price * qty()).toFixed(2) }} AED</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (related().length > 0) {
+    <section class="mt-16">
+      <h2 class="text-2xl font-bold mb-5">You might also like</h2>
+      <div class="grid gap-5 grid-cols-2 md:grid-cols-4">
+        @for (rp of related(); track rp.id) {
+          <app-product-card [product]="rp" />
+        }
+      </div>
+    </section>
+  }
+</div>

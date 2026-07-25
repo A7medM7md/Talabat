@@ -1,0 +1,77 @@
+<header class="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
+  <div class="container-page flex h-16 items-center gap-4">
+    <a routerLink="/" class="flex items-center gap-2 shrink-0">
+      <div class="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground font-black">t</div>
+      <span class="text-xl font-black tracking-tight">talabat</span>
+    </a>
+
+    <button
+      class="hidden md:flex min-w-0 flex-1 items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-left text-sm hover:border-primary transition"
+    >
+      <lucide-icon name="map-pin" [size]="16" class="shrink-0 text-primary" />
+      <span class="truncate text-muted-foreground">
+        Deliver to — <span class="text-foreground font-medium">Downtown, 15 Nile St.</span>
+      </span>
+    </button>
+
+    <nav class="hidden md:flex items-center gap-1">
+      <a routerLink="/products" class="px-3 py-2 text-sm font-medium rounded-full hover:bg-muted">Menu</a>
+      @if (auth.isAuthenticated()) {
+        <a routerLink="/orders" class="px-3 py-2 text-sm font-medium rounded-full hover:bg-muted flex items-center gap-1.5">
+          <lucide-icon name="package" [size]="16" /> Orders
+        </a>
+      }
+      @if (!auth.isAuthenticated()) {
+        <a routerLink="/login" class="px-3 py-2 text-sm font-medium rounded-full hover:bg-muted">Login</a>
+        <a routerLink="/register" class="btn-brand text-sm">Sign up</a>
+      } @else {
+        <a routerLink="/profile" class="px-3 py-2 text-sm font-medium rounded-full hover:bg-muted flex items-center gap-1.5">
+          <lucide-icon name="user" [size]="16" /> {{ auth.currentUser()?.displayName ?? 'Me' }}
+        </a>
+        <button (click)="logout()" class="p-2 rounded-full hover:bg-muted" aria-label="Logout">
+          <lucide-icon name="log-out" [size]="16" />
+        </button>
+      }
+      <a
+        routerLink="/basket"
+        class="relative ml-2 flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-sm font-semibold text-background hover:opacity-90"
+      >
+        <lucide-icon name="shopping-bag" [size]="16" />
+        Cart
+        @if (basketSvc.count() > 0) {
+          <span class="grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-xs font-bold text-primary-foreground">
+            {{ basketSvc.count() }}
+          </span>
+        }
+      </a>
+    </nav>
+
+    <button class="md:hidden ml-auto p-2 rounded-full hover:bg-muted" (click)="toggleMobile()" aria-label="Menu">
+      <lucide-icon [name]="mobileOpen() ? 'x' : 'menu'" [size]="20" />
+    </button>
+  </div>
+
+  @if (mobileOpen()) {
+    <div class="md:hidden border-t border-border bg-background">
+      <div class="container-page py-3 flex flex-col gap-1">
+        <a routerLink="/products" (click)="closeMobile()" class="px-3 py-2.5 rounded-lg hover:bg-muted">Menu</a>
+        <a routerLink="/orders" (click)="closeMobile()" class="px-3 py-2.5 rounded-lg hover:bg-muted">Orders</a>
+        <a routerLink="/basket" (click)="closeMobile()" class="px-3 py-2.5 rounded-lg hover:bg-muted">
+          Cart ({{ basketSvc.count() }})
+        </a>
+        @if (!auth.isAuthenticated()) {
+          <a routerLink="/login" (click)="closeMobile()" class="px-3 py-2.5 rounded-lg hover:bg-muted">Login</a>
+          <a
+            routerLink="/register"
+            (click)="closeMobile()"
+            class="px-3 py-2.5 rounded-lg bg-primary text-primary-foreground text-center font-semibold"
+            >Sign up</a
+          >
+        } @else {
+          <a routerLink="/profile" (click)="closeMobile()" class="px-3 py-2.5 rounded-lg hover:bg-muted">Profile</a>
+          <button (click)="logout()" class="px-3 py-2.5 rounded-lg hover:bg-muted text-left">Logout</button>
+        }
+      </div>
+    </div>
+  }
+</header>

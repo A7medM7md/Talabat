@@ -1,0 +1,120 @@
+<div class="container-page py-6 md:py-10">
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+    <div>
+      <h1 class="text-3xl font-bold">Menu</h1>
+      <p class="text-sm text-muted-foreground mt-1">
+        {{ products() ? totalCount() + ' items available' : 'Loading…' }}
+      </p>
+    </div>
+    <div class="flex items-center gap-2">
+      <p-select
+        [options]="sortOptions"
+        optionLabel="label"
+        optionValue="value"
+        [ngModel]="sort()"
+        (onChange)="setSort($event.value)"
+        styleClass="rounded-full"
+      />
+      <div class="flex rounded-full border border-border bg-card p-1">
+        <button
+          (click)="setView('grid')"
+          [class.bg-primary]="view() === 'grid'"
+          [class.text-primary-foreground]="view() === 'grid'"
+          class="grid h-8 w-8 place-items-center rounded-full"
+          aria-label="Grid view"
+        >
+          <lucide-icon name="grid-3x3" [size]="16" />
+        </button>
+        <button
+          (click)="setView('list')"
+          [class.bg-primary]="view() === 'list'"
+          [class.text-primary-foreground]="view() === 'list'"
+          class="grid h-8 w-8 place-items-center rounded-full"
+          aria-label="List view"
+        >
+          <lucide-icon name="list" [size]="16" />
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid gap-6 md:grid-cols-[240px_1fr]">
+    <aside class="space-y-6">
+      <div class="rounded-2xl border border-border bg-card p-4">
+        <div class="flex items-center justify-between mb-3">
+          <div class="font-semibold flex items-center gap-2">
+            <lucide-icon name="sliders-horizontal" [size]="16" /> Filters
+          </div>
+          @if (typeId() || brandId()) {
+            <button (click)="clearFilters()" class="text-xs text-primary flex items-center gap-1">
+              <lucide-icon name="x" [size]="12" /> Clear
+            </button>
+          }
+        </div>
+        <div class="mb-4">
+          <div class="text-xs font-semibold uppercase text-muted-foreground mb-2">Category</div>
+          <div class="flex flex-wrap gap-1.5">
+            @for (t of types(); track t.id) {
+              <button (click)="toggleType(t.id)" class="chip text-xs" [class.chip-active]="typeId() === +t.id">
+                {{ t.name }}
+              </button>
+            }
+          </div>
+        </div>
+        <div>
+          <div class="text-xs font-semibold uppercase text-muted-foreground mb-2">Brand</div>
+          <div class="flex flex-wrap gap-1.5">
+            @for (b of brands(); track b.id) {
+              <button (click)="toggleBrand(b.id)" class="chip text-xs" [class.chip-active]="brandId() === +b.id">
+                {{ b.name }}
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <div>
+      @if (loading()) {
+        <div [class]="view() === 'grid' ? 'grid gap-5 grid-cols-2 md:grid-cols-3 lg:grid-cols-4' : 'flex flex-col gap-3'">
+          @for (i of [1, 2, 3, 4, 5, 6, 7, 8]; track i) {
+            <app-product-card-skeleton />
+          }
+        </div>
+      }
+      @if (!loading() && products()?.length === 0) {
+        <div class="rounded-2xl border border-border bg-card p-10 text-center">
+          <p class="font-semibold">No products found</p>
+          <p class="text-sm text-muted-foreground mt-1">Try clearing filters.</p>
+        </div>
+      }
+      @if (!loading() && products() && products()!.length > 0) {
+        <div [class]="view() === 'grid' ? 'grid gap-5 grid-cols-2 md:grid-cols-3 lg:grid-cols-4' : 'flex flex-col gap-3'">
+          @for (p of products(); track p.id) {
+            <app-product-card [product]="p" />
+          }
+        </div>
+      }
+
+      @if (!loading() && products() && totalPages() > 1) {
+        <div class="flex justify-center items-center gap-2 mt-8">
+          <button
+            [disabled]="pageIndex() <= 1"
+            (click)="goToPage(pageIndex() - 1)"
+            class="rounded-full border border-border px-4 py-2 text-sm disabled:opacity-50 hover:border-primary"
+          >
+            Previous
+          </button>
+          <span class="text-sm px-4">Page {{ pageIndex() }} of {{ totalPages() }}</span>
+          <button
+            [disabled]="pageIndex() >= totalPages()"
+            (click)="goToPage(pageIndex() + 1)"
+            class="rounded-full border border-border px-4 py-2 text-sm disabled:opacity-50 hover:border-primary"
+          >
+            Next
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+</div>

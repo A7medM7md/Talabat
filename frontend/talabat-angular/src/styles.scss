@@ -1,0 +1,220 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap");
+
+:root {
+  --radius: 0.875rem;
+
+  --color-background: oklch(1 0 0);
+  --color-foreground: oklch(0.18 0.02 250);
+
+  --color-surface: oklch(0.985 0.005 80);
+
+  --color-card: oklch(1 0 0);
+  --color-card-foreground: oklch(0.18 0.02 250);
+  --color-popover: oklch(1 0 0);
+  --color-popover-foreground: oklch(0.18 0.02 250);
+
+  /* Talabat orange #FF5A00 */
+  --color-brand: oklch(0.68 0.2 40);
+  --color-brand-foreground: oklch(1 0 0);
+  --color-primary: oklch(0.68 0.2 40);
+  --color-primary-foreground: oklch(1 0 0);
+  --color-primary-hover: oklch(0.62 0.21 38);
+
+  --color-secondary: oklch(0.97 0.005 80);
+  --color-secondary-foreground: oklch(0.22 0.02 250);
+  --color-muted: oklch(0.965 0.005 80);
+  --color-muted-foreground: oklch(0.5 0.02 250);
+  --color-accent: oklch(0.96 0.02 40);
+  --color-accent-foreground: oklch(0.35 0.15 40);
+
+  --color-destructive: oklch(0.6 0.22 25);
+  --color-destructive-foreground: oklch(1 0 0);
+  --color-success: oklch(0.65 0.16 155);
+  --color-warning: oklch(0.78 0.15 75);
+
+  --color-border: oklch(0.92 0.006 250);
+  --color-input: oklch(0.92 0.006 250);
+  --color-ring: oklch(0.68 0.2 40);
+}
+
+.dark {
+  --color-background: oklch(0.16 0.015 260);
+  --color-foreground: oklch(0.98 0 0);
+  --color-surface: oklch(0.2 0.015 260);
+  --color-card: oklch(0.2 0.015 260);
+  --color-card-foreground: oklch(0.98 0 0);
+  --color-popover: oklch(0.2 0.015 260);
+  --color-popover-foreground: oklch(0.98 0 0);
+  --color-secondary: oklch(0.25 0.02 260);
+  --color-secondary-foreground: oklch(0.98 0 0);
+  --color-muted: oklch(0.25 0.02 260);
+  --color-muted-foreground: oklch(0.7 0.02 260);
+  --color-accent: oklch(0.28 0.05 40);
+  --color-accent-foreground: oklch(0.9 0.15 40);
+  --color-border: oklch(1 0 0 / 12%);
+  --color-input: oklch(1 0 0 / 15%);
+}
+
+* {
+  border-color: var(--color-border);
+}
+html,
+body {
+  height: 100%;
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+body {
+  margin: 0;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+}
+h1,
+h2,
+h3,
+h4 {
+  font-family: "Poppins", "Inter", sans-serif;
+  letter-spacing: -0.01em;
+}
+
+@layer components {
+  .container-page {
+    width: 100%;
+    margin-inline: auto;
+    max-width: 1280px;
+    padding-inline: 1rem;
+  }
+
+  .btn-brand {
+    background-color: var(--color-primary);
+    color: var(--color-primary-foreground);
+    border-radius: 9999px;
+    padding: 0.625rem 1.25rem;
+    font-weight: 600;
+    transition: all 0.15s ease;
+    box-shadow: 0 8px 20px -6px oklch(0.68 0.2 40 / 0.35);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: none;
+    cursor: pointer;
+  }
+  .btn-brand:hover {
+    background-color: var(--color-primary-hover);
+    transform: translateY(-1px);
+  }
+  .btn-brand:active {
+    transform: translateY(0);
+  }
+  .btn-brand:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0.875rem;
+    border-radius: 9999px;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .chip:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+  .chip-active {
+    background-color: var(--color-primary);
+    color: var(--color-primary-foreground);
+    border-color: var(--color-primary);
+  }
+
+  .card-hover {
+    transition: all 0.2s ease;
+  }
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px -6px rgb(0 0 0 / 0.12), 0 4px 8px -4px rgb(0 0 0 / 0.06);
+  }
+
+  .skeleton {
+    background: linear-gradient(90deg, var(--color-muted) 0%, oklch(0.95 0.005 80) 50%, var(--color-muted) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+    border-radius: calc(var(--radius) - 2px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-up {
+  animation: fade-up 0.4s ease-out both;
+}
+
+/* ---- PrimeNG <-> Tailwind bridge ----
+   PrimeNG's Aura preset is configured (see app.config.ts) with its primary
+   palette mapped to the brand orange, so p-button/p-select/etc. inherit the
+   same look as the rest of the app without per-component overrides. */
+.p-component {
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+// Scrollbars
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+/* Chrome, Edge, Safari (WebKit) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--muted-foreground);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}

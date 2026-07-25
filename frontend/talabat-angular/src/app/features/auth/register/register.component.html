@@ -1,0 +1,80 @@
+<div class="container-page py-10 md:py-16 max-w-md mx-auto">
+  <h1 class="text-3xl font-black">Create your account</h1>
+  <p class="text-sm text-muted-foreground mt-1">Get food delivered in minutes</p>
+
+  <form (ngSubmit)="submit()" class="mt-6 space-y-4">
+    <label class="block">
+      <span class="text-xs font-semibold text-muted-foreground">Display name</span>
+      <input pInputText required [ngModel]="displayName()" (ngModelChange)="displayName.set($event)" name="displayName" class="mt-1 w-full" />
+    </label>
+
+    <label class="block">
+      <span class="text-xs font-semibold text-muted-foreground">Email</span>
+      <div class="mt-1 relative">
+        <input
+          pInputText
+          type="email"
+          required
+          [ngModel]="email()"
+          (ngModelChange)="onEmailChange($event)"
+          name="email"
+          class="w-full pr-10"
+          placeholder="you@example.com"
+        />
+        <div class="absolute right-3 top-1/2 -translate-y-1/2">
+          @if (emailState() === 'checking') {
+            <lucide-icon name="loader-2" [size]="16" class="animate-spin text-muted-foreground" />
+          }
+          @if (emailState() === 'available') {
+            <lucide-icon name="check" [size]="16" class="text-success" />
+          }
+          @if (emailState() === 'taken') {
+            <lucide-icon name="x" [size]="16" class="text-destructive" />
+          }
+        </div>
+      </div>
+      @if (emailState() === 'taken') {
+        <span class="text-xs text-destructive mt-1 block">This email is already registered</span>
+      }
+      @if (emailState() === 'available') {
+        <span class="text-xs text-success mt-1 block">Email is available</span>
+      }
+    </label>
+
+    <label class="block">
+      <span class="text-xs font-semibold text-muted-foreground">Phone number</span>
+      <input
+        pInputText
+        type="tel"
+        required
+        [ngModel]="phoneNumber()"
+        (ngModelChange)="phoneNumber.set($event)"
+        name="phoneNumber"
+        class="mt-1 w-full"
+      />
+    </label>
+
+    <label class="block">
+      <span class="text-xs font-semibold text-muted-foreground">Password</span>
+      <p-password
+        [ngModel]="password()"
+        (ngModelChange)="password.set($event)"
+        name="password"
+        [toggleMask]="true"
+        placeholder="At least 8 characters"
+        styleClass="w-full mt-1"
+        inputStyleClass="w-full"
+      />
+    </label>
+
+    @if (error()) {
+      <div class="rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-sm px-3 py-2">{{ error() }}</div>
+    }
+    <button type="submit" [disabled]="loading() || emailState() === 'taken'" class="btn-brand w-full">
+      {{ loading() ? 'Creating account…' : 'Create account' }}
+    </button>
+  </form>
+  <p class="mt-6 text-sm text-center text-muted-foreground">
+    Already have an account? <a routerLink="/login" class="text-primary font-semibold hover:underline">Log in</a>
+  </p>
+</div>

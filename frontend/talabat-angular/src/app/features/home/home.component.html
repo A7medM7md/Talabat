@@ -1,0 +1,123 @@
+<section class="relative overflow-hidden bg-gradient-to-br from-accent via-background to-surface">
+  <div class="container-page py-12 md:py-20 grid gap-10 md:grid-cols-2 items-center">
+    <div class="animate-fade-up">
+      <span class="inline-flex items-center gap-1.5 rounded-full bg-primary/10 text-primary px-3 py-1 text-xs font-semibold">
+        🔥 Free delivery on your first 3 orders
+      </span>
+      <h1 class="mt-4 text-4xl md:text-6xl font-black tracking-tight leading-[1.05]">
+        Order food you love,<br />
+        <span class="text-primary">delivered fast.</span>
+      </h1>
+      <p class="mt-4 text-lg text-muted-foreground max-w-md">
+        From your neighbourhood favourites to global brands — pick, tap, enjoy.
+      </p>
+      <div class="mt-6 flex items-center gap-2 rounded-full border border-border bg-card p-2 shadow-card max-w-xl">
+        <div class="pl-3 pr-2 text-primary"><lucide-icon name="map-pin" [size]="20" /></div>
+        <input placeholder="Enter your delivery address" class="flex-1 min-w-0 bg-transparent py-2 outline-none text-sm" />
+        <a routerLink="/products" class="btn-brand flex items-center gap-2 text-sm">
+          <lucide-icon name="search" [size]="16" /> Find food
+        </a>
+      </div>
+      <div class="mt-6 flex flex-wrap gap-5 text-sm text-muted-foreground">
+        <span class="flex items-center gap-2"><lucide-icon name="clock" [size]="16" class="text-primary" /> 25 min avg delivery</span>
+        <span class="flex items-center gap-2"><lucide-icon name="truck" [size]="16" class="text-primary" /> Free over 50 AED</span>
+        <span class="flex items-center gap-2"><lucide-icon name="shield" [size]="16" class="text-primary" /> Secure payment</span>
+      </div>
+    </div>
+    <div class="relative hidden md:block animate-fade-up">
+      <div class="aspect-square rounded-3xl bg-gradient-to-br from-primary/20 to-primary/5 relative overflow-hidden">
+        <img
+          src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80"
+          alt="Fresh pizza"
+          class="absolute inset-0 h-full w-full object-cover mix-blend-multiply"
+        />
+        <div class="absolute bottom-6 left-6 right-6 rounded-2xl bg-background/95 backdrop-blur p-4 shadow-elevated text-white">
+          <div class="text-xs">Trending now</div>
+          <div class="font-bold text-lg">Margherita Pizza</div>
+          <div class="flex justify-between items-end mt-1">
+            <div class="text-xs">Pizza Palace · 20 min</div>
+            <div class="font-bold text-primary">45 AED</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Categories -->
+<section class="container-page py-10">
+  <div class="flex items-end justify-between mb-5">
+    <div>
+      <h2 class="text-2xl font-bold">What are you craving?</h2>
+      <p class="text-sm text-muted-foreground">Browse by category</p>
+    </div>
+    <a routerLink="/products" class="text-sm font-semibold text-primary hover:underline">See all →</a>
+  </div>
+  <div class="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 snap-x">
+    @if (types().length === 0) {
+      @for (i of [1, 2, 3, 4, 5, 6, 7, 8]; track i) {
+        <div class="skeleton h-24 w-32 shrink-0 rounded-2xl"></div>
+      }
+    }
+    @for (t of types(); track t.id) {
+      <a
+        routerLink="/products"
+        [queryParams]="{ typeId: t.id }"
+        class="snap-start shrink-0 w-32 h-24 rounded-2xl bg-card border border-border shadow-card flex flex-col items-center justify-center gap-1 hover:border-primary hover:text-primary transition"
+      >
+        <span class="text-2xl">🍔</span>
+        <span class="text-sm font-semibold truncate max-w-[120px] px-2">{{ t.name }}</span>
+      </a>
+    }
+  </div>
+</section>
+
+<!-- Promo banner -->
+<section class="container-page">
+  <div
+    class="rounded-3xl bg-gradient-to-r from-primary to-primary-hover text-primary-foreground p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden relative"
+  >
+    <div class="max-w-lg">
+      <div class="text-sm font-semibold opacity-90">TALABAT REWARDS</div>
+      <h3 class="mt-2 text-3xl md:text-4xl font-black">Get 30% off your next 3 orders</h3>
+      <p class="mt-2 opacity-90">Use code TALABAT30 at checkout. No minimum order.</p>
+    </div>
+    <a routerLink="/products" class="rounded-full bg-background text-foreground px-6 py-3 font-semibold hover:opacity-90 shrink-0">
+      Order now
+    </a>
+    <div class="absolute -right-10 -bottom-10 h-52 w-52 rounded-full bg-white/10"></div>
+  </div>
+</section>
+
+<!-- Brands -->
+<section class="container-page py-10">
+  <h2 class="text-2xl font-bold mb-5">Popular restaurants</h2>
+  <div class="flex flex-wrap gap-2">
+    @if (brands().length === 0) {
+      @for (i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; track i) {
+        <div class="skeleton h-10 w-28 rounded-full"></div>
+      }
+    }
+    @for (b of brands(); track b.id) {
+      <a routerLink="/products" [queryParams]="{ brandId: b.id }" class="chip">{{ b.name }}</a>
+    }
+  </div>
+</section>
+
+<!-- Featured -->
+<section class="container-page py-10">
+  <div class="flex items-end justify-between mb-5">
+    <h2 class="text-2xl font-bold">Featured for you</h2>
+    <a routerLink="/products" class="text-sm font-semibold text-primary hover:underline">View all →</a>
+  </div>
+  <div class="grid gap-5 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+    @if (loadingFeatured()) {
+      @for (i of [1, 2, 3, 4, 5, 6, 7, 8]; track i) {
+        <app-product-card-skeleton />
+      }
+    }
+    @for (p of featured(); track p.id) {
+      <app-product-card [product]="p" />
+    }
+  </div>
+</section>

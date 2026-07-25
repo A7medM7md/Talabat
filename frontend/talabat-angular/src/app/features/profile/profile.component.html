@@ -1,0 +1,55 @@
+@if (!authed) {
+  <div class="container-page py-10">
+    <app-empty-state title="Please log in">
+      <lucide-icon icon name="user" [size]="36" />
+      <a action routerLink="/login" class="btn-brand">Log in</a>
+    </app-empty-state>
+  </div>
+} @else {
+  <div class="container-page py-6 md:py-10 max-w-3xl">
+    <h1 class="text-3xl font-bold mb-6">My profile</h1>
+
+    <section class="rounded-2xl border border-border bg-card p-6 mb-6">
+      <div class="flex items-center gap-4">
+        <div class="grid h-16 w-16 place-items-center rounded-full bg-primary text-primary-foreground text-2xl font-black shrink-0">
+          {{ (user()?.displayName?.[0] ?? 'U').toUpperCase() }}
+        </div>
+        <div class="min-w-0">
+          <div class="text-xl font-bold truncate">{{ user()?.displayName ?? '…' }}</div>
+          <div class="text-sm text-muted-foreground truncate">{{ user()?.email ?? '' }}</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="rounded-2xl border border-border bg-card p-6">
+      <h2 class="font-semibold text-lg mb-4 flex items-center gap-2">
+        <lucide-icon name="map-pin" [size]="20" class="text-primary" /> Delivery address
+      </h2>
+      <form (ngSubmit)="save()" class="grid gap-4 sm:grid-cols-2">
+        <label class="block">
+          <span class="text-xs font-semibold text-muted-foreground">First name</span>
+          <input pInputText required [ngModel]="addr().firstName" (ngModelChange)="setField('firstName', $event)" name="firstName" class="mt-1 w-full" />
+        </label>
+        <label class="block">
+          <span class="text-xs font-semibold text-muted-foreground">Last name</span>
+          <input pInputText required [ngModel]="addr().lastName" (ngModelChange)="setField('lastName', $event)" name="lastName" class="mt-1 w-full" />
+        </label>
+        <label class="block sm:col-span-2">
+          <span class="text-xs font-semibold text-muted-foreground">Street</span>
+          <input pInputText required [ngModel]="addr().street" (ngModelChange)="setField('street', $event)" name="street" class="mt-1 w-full" />
+        </label>
+        <label class="block">
+          <span class="text-xs font-semibold text-muted-foreground">City</span>
+          <input pInputText required [ngModel]="addr().city" (ngModelChange)="setField('city', $event)" name="city" class="mt-1 w-full" />
+        </label>
+        <label class="block">
+          <span class="text-xs font-semibold text-muted-foreground">Country</span>
+          <input pInputText required [ngModel]="addr().country" (ngModelChange)="setField('country', $event)" name="country" class="mt-1 w-full" />
+        </label>
+        <div class="sm:col-span-2">
+          <button type="submit" [disabled]="saving()" class="btn-brand">{{ saving() ? 'Saving…' : 'Save changes' }}</button>
+        </div>
+      </form>
+    </section>
+  </div>
+}
